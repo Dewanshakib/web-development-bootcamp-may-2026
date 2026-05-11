@@ -37,11 +37,6 @@ const data = {
       url: "/dashboard/transactions",
       icon: <HandCoins />,
     },
-    {
-      title: "Settings",
-      url: "/dashboard/settings",
-      icon: <Settings2Icon />,
-    },
   ],
 };
 

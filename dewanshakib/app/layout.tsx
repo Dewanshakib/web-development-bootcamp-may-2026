@@ -52,13 +52,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TooltipProvider>
-            <div>
-              <NavbarWrapper>
-                <Navbar />
-              </NavbarWrapper>
-              {children}
-              <Toaster />
-            </div>
+            <NavbarWrapper>
+              <Navbar />
+            </NavbarWrapper>
+            {children}
+            <Toaster />
           </TooltipProvider>
         </ThemeProvider>
       </body>
