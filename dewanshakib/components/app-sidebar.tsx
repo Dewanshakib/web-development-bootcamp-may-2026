@@ -12,12 +12,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  Settings2Icon,
-  TerminalIcon,
-  LayoutDashboard,
-  HandCoins,
-} from "lucide-react";
+import { LayoutDashboard, HandCoins, Tags, User } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import logo from "@/public/assets/khorcha_logo-Photoroom.svg";
 
 const data = {
   user: {
@@ -31,43 +29,52 @@ const data = {
       url: "/dashboard",
       icon: <LayoutDashboard />,
     },
-
     {
       title: "Transactions",
       url: "/dashboard/transactions",
       icon: <HandCoins />,
     },
+    {
+      title: "Categories",
+      url: "/dashboard/categories",
+      icon: <Tags />,
+    },
+    {
+      title: "Account",
+      url: "/dashboard/account",
+      icon: <User />,
+    },
   ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-
-    
-
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <TerminalIcon className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Expense Tracker</span>
-                  <span className="truncate text-xs">Personalized</span>
-                </div>
-              </a>
+              <Link
+                href="/dashboard"
+                className="absolute top-[0%] left-[0%] w-[30px] h-[25px] -ml-13"
+              >
+                <Image
+                  src={logo}
+                  fill
+                  className="object-contain"
+                  alt="processi - brand logo"
+                  priority
+                />
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="mt-10">
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-         <NavUser />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );

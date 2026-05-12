@@ -1,23 +1,21 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { createTransactionSchema, type CreateTransactionInput } from "@/lib/schema";
+import { createTransactionSchema, CreateTransactionInput } from "@/lib/schema";
+import {
+  ICreateTransactionActionResult,
+  IDeleteTransactionActionResult,
+} from "@/interfaces/interfaces";
 import prisma from "@/prisma/prisma";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
-export type CreateTransactionActionResult = {
-  status: "success" | "error";
-  message?: string;
-};
-
 export async function createTransactionAction(
   formData: FormData,
-): Promise<CreateTransactionActionResult> {
+): Promise<ICreateTransactionActionResult> {
   const payload: Partial<CreateTransactionInput> = {
     amount: formData.get("amount") as unknown as CreateTransactionInput["amount"],
     description: (formData.get("description") as string | null) ?? undefined,
-    category_icon: formData.get("category_icon") as string,
     category_name: formData.get("category_name") as string,
     type: formData.get("type") as CreateTransactionInput["type"],
     date: formData.get("date") as unknown as CreateTransactionInput["date"],
@@ -41,12 +39,12 @@ export async function createTransactionAction(
     return { status: "error", message: "Unauthorized" };
   }
 
-  const { amount, description, category_icon, category_name, type, date } =
+  const { amount, description, category_name, type, date } =
     parsed.data;
 
   const transactionDate = new Date(date);
   const day = transactionDate.getDate();
-  const month = transactionDate.getMonth();
+  const month = transactionDate.getMonth() + 1;
   const year = transactionDate.getFullYear();
 
   await prisma.$transaction([
@@ -54,7 +52,6 @@ export async function createTransactionAction(
       data: {
         amount,
         description,
-        category_icon,
         category_name,
         type,
         userId: session.user.id,
@@ -105,17 +102,13 @@ export async function createTransactionAction(
     }),
   ]);
 
+  revalidatePath("/dashboard");
   return { status: "success", message: "Transaction created" };
 }
 
-export type DeleteTransactionActionResult = {
-  status: "success" | "error";
-  message?: string;
-};
-
 export async function deleteTransactionAction(
   formData: FormData,
-): Promise<DeleteTransactionActionResult> {
+): Promise<IDeleteTransactionActionResult> {
   const id = formData.get("id");
 
   if (typeof id !== "string" || !id) {

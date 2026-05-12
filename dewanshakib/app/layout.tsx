@@ -3,10 +3,10 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ThemeProvider } from "@/components/layout/theme-provider";
 import NavbarWrapper from "@/components/layout/navbar-wrapper";
 import Navbar from "@/components/layout/navbar";
 import { Toaster } from "@/components/ui/sonner";
+import ThemeProvider from "@/components/layout/theme-provider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 

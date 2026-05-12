@@ -2,10 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  createTransactionSchema,
-  type CreateTransactionInput,
-} from "@/lib/schema";
+import { createTransactionSchema, CreateTransactionInput } from "@/lib/schema";
 import { createTransactionAction } from "@/app/actions/transactions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,31 +18,64 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
-import { ITransactionType } from "@/interfaces/interfaces";
+import { ICreateTransactionModalProps } from "@/interfaces/interfaces";
 import { toast } from "sonner";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { useState, useEffect } from "react";
+import { getCategories } from "@/app/actions/categories";
+
+type Category = {
+  id: string;
+  name: string;
+  type: string;
+  userId: string;
+  created_at: Date;
+  updated_at: Date;
+};
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { useEffect, useState } from "react";
 
-interface CreateTransactionModalProps extends ITransactionType {
-  modalTrigger: React.ReactNode;
-}
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import { useRouter } from "next/navigation";
 
 export default function CreateTransactionModal({
   type,
+  userId,
   modalTrigger,
-}: CreateTransactionModalProps) {
+}: ICreateTransactionModalProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+
+  useEffect(() => {
+    if (open && userId) {
+      setLoadingCategories(true);
+      getCategories(userId)
+        .then((data) => {
+          const filtered = data.categories.filter(
+            (c) => c.type === type || c.type === "both",
+          );
+          setCategories(filtered);
+        })
+        .finally(() => setLoadingCategories(false));
+    }
+  }, [open, userId, type]);
   const {
     register,
     handleSubmit,
-    reset,
     trigger,
     setValue,
     watch,
@@ -59,13 +89,14 @@ export default function CreateTransactionModal({
     },
   });
 
+
+
   async function onSubmit(data: CreateTransactionInput) {
     const formData = new FormData();
     formData.set("amount", String(data.amount));
     if (data.description) {
       formData.set("description", data.description);
     }
-    formData.set("category_icon", data.category_icon);
     formData.set("category_name", data.category_name);
     formData.set("type", data.type);
     formData.set(
@@ -99,10 +130,7 @@ export default function CreateTransactionModal({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{modalTrigger}</DialogTrigger>
       <DialogContent className="sm:max-w-sm">
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col gap-4"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <DialogHeader>
             <DialogTitle className="capitalize">Add {type}</DialogTitle>
             <DialogDescription>
@@ -145,33 +173,51 @@ export default function CreateTransactionModal({
             </Field>
 
             <Field>
-              <Label htmlFor="category_name">Category Name</Label>
-              <Input
-                id="category_name"
-                type="text"
-                placeholder="e.g. Salary, Food, Rent"
-                {...register("category_name")}
-                aria-invalid={!!errors.category_name}
-              />
+              <Label htmlFor="category_name">Category</Label>
+              {loadingCategories ? (
+                <Input disabled placeholder="Loading categories..." />
+              ) : categories.length === 0 ? (
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm text-muted-foreground">
+                    No categories found. Please create a category first.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setOpen(false);
+                      router.push("/dashboard/categories");
+                    }}
+                  >
+                    Go to Categories
+                  </Button>
+                </div>
+              ) : (
+                <Select
+                  onValueChange={(value) => {
+                    setValue("category_name", value, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    });
+                    void trigger("category_name");
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.name}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               {errors.category_name && (
                 <span className="text-xs text-destructive">
                   {errors.category_name.message}
-                </span>
-              )}
-            </Field>
-
-            <Field>
-              <Label htmlFor="category_icon">Category Icon</Label>
-              <Input
-                id="category_icon"
-                type="text"
-                placeholder="e.g. 💰 or wallet"
-                {...register("category_icon")}
-                aria-invalid={!!errors.category_icon}
-              />
-              {errors.category_icon && (
-                <span className="text-xs text-destructive">
-                  {errors.category_icon.message}
                 </span>
               )}
             </Field>
@@ -214,10 +260,7 @@ export default function CreateTransactionModal({
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button
-              type="submit"
-              disabled={isBusy}
-            >
+            <Button type="submit" disabled={isBusy}>
               {isBusy ? "Creating..." : `Add ${type}`}
             </Button>
           </DialogFooter>

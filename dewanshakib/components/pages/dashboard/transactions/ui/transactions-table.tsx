@@ -30,15 +30,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ITransactionRow } from "@/interfaces/interfaces";
+import { ITransactionsTableProps } from "@/interfaces/interfaces";
 
 export default function TransactionsTable({
   transactions,
   limit,
-}: {
-  transactions: ITransactionRow[];
-  limit: number;
-}) {
+}: ITransactionsTableProps) {
   const [dialogOpenId, setDialogOpenId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -203,7 +200,6 @@ export default function TransactionsTable({
           return (
             <TableRow key={transaction.id} className="h-16 bg-background/60">
               <TableCell className="font-medium">
-                <span className="mr-2">{transaction.category_icon}</span>
                 {transaction.category_name}
               </TableCell>
               <TableCell className="text-muted-foreground">

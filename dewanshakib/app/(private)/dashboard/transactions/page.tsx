@@ -1,16 +1,10 @@
 import Transactions from "@/components/pages/dashboard/transactions/transactions";
+import { ITransactionsSearchParams } from "@/interfaces/interfaces";
 
 export default async function TransactionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    page?: string;
-    limit?: string;
-    orderBy?: string;
-    orderDir?: string;
-  }>;
+  searchParams: Promise<ITransactionsSearchParams>;
 }) {
-  const params = await searchParams;
-
-  return <Transactions searchParams={params} />;
+  return <Transactions searchParams={searchParams} />;
 }

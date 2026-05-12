@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 import SignIn from "../auth/sign-in";
+import Image from "next/image";
+import logo from "@/public/assets/khorcha_logo-Photoroom.svg";
 
 const navLinks = [
   {
@@ -28,15 +30,22 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-
-
   return (
     <header className="sticky shadow-2xs top-0 z-50 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/60">
       <div className="flex py-4 w-full items-center justify-between px-5">
         {/* logo */}
-        <div className="">
-          <h1>Khorcha</h1>
-        </div>
+        <Link
+          href="/"
+          className="relative w-36 h-11 shrink-0 "
+        >
+          <Image
+            src={logo}
+            fill
+            className="object-contain"
+            alt="processi - brand logo"
+            priority
+          />
+        </Link>
 
         {/* navlinks */}
         <div className="flex items-center gap-x-5">
@@ -50,7 +59,6 @@ export default function Navbar() {
         {/* auth button */}
         <div className="flex items-center gap-x-3">
           <ThemeToggle />
-          <SignIn variant={"outline"} title="Login" />
           <SignIn variant={"default"} title="Get Started" />
         </div>
       </div>

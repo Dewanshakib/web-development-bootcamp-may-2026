@@ -1,6 +1,10 @@
 import Dashboard from "@/components/pages/dashboard/dashboard";
-import React from "react";
+import { IDashboardSearchParams } from "@/interfaces/interfaces";
 
-export default function DashboardPage() {
-  return <Dashboard />;
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<IDashboardSearchParams>;
+}) {
+  return <Dashboard searchParams={searchParams} />;
 }

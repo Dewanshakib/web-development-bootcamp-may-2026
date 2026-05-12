@@ -17,10 +17,10 @@ model User {
   updatedAt      DateTime       @updatedAt
   sessions       Session[]
   accounts       Account[]
-  categories     Category[]
   transactions   Transactions[]
   monthHistories MonthHistory[]
   yearHistories  YearHistory[]
+  categories     Category[]
 
   @@unique([email])
   @@map("user")
@@ -74,10 +74,23 @@ model Verification {
   @@map("verification")
 }
 
+model Transactions {
+  id            String  @id @default(cuid())
+  amount        Float
+  description   String?
+  category_name String
+  type          String  @default("income")
+  userId        String
+  user          User    @relation(fields: [userId], references: [id])
+
+  created_at DateTime @default(now())
+
+  @@map("transaction")
+}
+
 model Category {
   id         String   @id @default(cuid())
   name       String
-  icon       String
   type       String   @default("income")
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -87,21 +100,6 @@ model Category {
 
   @@unique([userId, type, name])
   @@map("category")
-}
-
-model Transactions {
-  id            String  @id @default(cuid())
-  amount        Float
-  description   String?
-  category_icon String
-  category_name String
-  type          String  @default("income")
-  userId        String
-  user          User    @relation(fields: [userId], references: [id])
-
-  created_at DateTime @default(now())
-
-  @@map("transaction")
 }
 
 model MonthHistory {

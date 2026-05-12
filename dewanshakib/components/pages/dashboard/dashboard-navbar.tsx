@@ -8,13 +8,14 @@ export default function DashboardNavbar() {
   const { data: session } = useSession();
 
   return (
-    <div className="mb-10 flex flex-col md:flex md:flex-row md:justify-between w-full">
+    <div className="flex flex-col md:flex md:flex-row md:justify-between w-full">
       <h1 className="text-2xl mb-5 md:mb-0 md:text-3xl font-bold">
         Hello, {session?.user.name} 👋
       </h1>
 
       <div className="flex items-center gap-x-3">
         <CreateTransactionModal
+          userId={session?.user?.id as string}
           type="income"
           modalTrigger={
             <Button size="lg" variant="default">
@@ -23,6 +24,7 @@ export default function DashboardNavbar() {
           }
         />
         <CreateTransactionModal
+          userId={session?.user?.id as string}
           type="expense"
           modalTrigger={
             <Button size="lg" variant="destructive">

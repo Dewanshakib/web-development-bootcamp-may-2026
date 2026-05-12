@@ -3,6 +3,7 @@ import React, { FormEvent } from "react";
 import { Button } from "../ui/button";
 import { signIn } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { LogIn } from "lucide-react";
 
 export default function SignIn({
   title,
@@ -36,7 +37,7 @@ export default function SignIn({
     <>
       <form onSubmit={onSubmit}>
         <Button variant={variant} size={"lg"} type="submit">
-          {title}
+          {title} {title.startsWith("Get") && <LogIn />}
         </Button>
       </form>
     </>
