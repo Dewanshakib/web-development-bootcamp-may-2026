@@ -135,3 +135,9 @@ pnpm run dev
 - `pnpm run build` - Build for production
 - `pnpm run start` - Start production server
 - `pnpm run lint` - Run ESLint
+
+---
+
+## Live Preview
+
+Check out the live version of Khorcha: **[https://khorcha-2026.vercel.app/](https://khorcha-2026.vercel.app/)**
