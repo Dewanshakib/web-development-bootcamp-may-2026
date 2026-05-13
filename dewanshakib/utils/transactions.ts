@@ -2,32 +2,37 @@
 import {
   ITransactionTotals,
   ITransactionTotalsWhere,
-} from "@/interfaces/interfaces"; // totals type
-import prisma from "@/prisma/prisma"; // prisma client
+} from "@/interfaces/interfaces"; 
+import prisma from "@/prisma/prisma";
 
 export async function getTransactionTotalsByUser(
   userId: string,
-  from?: Date,
-  to?: Date,
+  month?: number,
 ): Promise<ITransactionTotals> {
-  const where: ITransactionTotalsWhere = { userId }; // base filter
+  const where: ITransactionTotalsWhere = { userId };
 
-  if (from || to) {
-    where.created_at = {}; // add date filter only when needed
-    if (from) where.created_at.gte = from; // start date
-    if (to) where.created_at.lte = to; // end date
+  if (month) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const startOfMonth = new Date(year, month - 1, 1);
+    const endOfMonth = new Date(year, month, 0, 23, 59, 59);
+
+    where.created_at = {
+      gte: startOfMonth,
+      lte: endOfMonth,
+    };
   }
 
   const totals = await prisma.transactions.groupBy({
-    by: ["type"], // group by income/expense
-    where, // apply filters
-    _sum: { amount: true }, // sum amounts
+    by: ["type"],
+    where,
+    _sum: { amount: true },
   });
 
-  const income = totals.find((t) => t.type === "income")?._sum.amount || 0; // income total
-  const expense = totals.find((t) => t.type === "expense")?._sum.amount || 0; // expense total
+  const income = totals.find((t) => t.type === "income")?._sum.amount || 0;
+  const expense = totals.find((t) => t.type === "expense")?._sum.amount || 0;
 
-  return { income, expense }; // return totals
+  return { income, expense };
 }
 
 export async function getTransactionHistoryData(

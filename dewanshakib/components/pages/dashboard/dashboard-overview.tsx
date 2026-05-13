@@ -14,18 +14,14 @@ import {
   getTransactionTotalsByUser,
   getYearlyTransactionHistoryData,
 } from "@/utils/transactions";
-import DateRangePicker from "./ui/date-range-picker";
 import { IDashboardOverviewProps } from "@/interfaces/interfaces";
 import DashboardRadarChart from "./dashboard-radar-chart";
 import TransactionHistoryChart from "./ui/transaction-history-chart";
 import DashboardStatsNumberTicker from "./ui/dashboard-stats-number-ticker";
+import SelectMonth from "./ui/select-month";
 
-function parseDate(value?: string) {
-  if (!value) return undefined;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return undefined;
-  return date;
-}
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function DashboardOverview({
   searchParams,
@@ -35,11 +31,12 @@ export default async function DashboardOverview({
     headers: await headers(),
   });
 
-  const from = parseDate(params?.from);
-  const to = parseDate(params?.to);
+  const month = params?.month
+    ? parseInt(params.month)
+    : new Date().getMonth() + 1;
 
   const totals = session?.user
-    ? await getTransactionTotalsByUser(session.user.id, from, to)
+    ? await getTransactionTotalsByUser(session.user.id, month)
     : { income: 0, expense: 0 };
 
   const balance = totals.income - totals.expense;
@@ -55,7 +52,7 @@ export default async function DashboardOverview({
     <div className="py-10">
       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="font-bold text-2xl md:text-3xl">Overview</h1>
-        <DateRangePicker />
+        <SelectMonth />
       </div>
       <div className="grid w-full grid-cols-1 md:grid-cols-3 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
         <Card className="@container/card">

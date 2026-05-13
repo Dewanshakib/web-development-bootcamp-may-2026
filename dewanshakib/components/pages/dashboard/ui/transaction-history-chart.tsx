@@ -1,19 +1,12 @@
 "use client";
 
 import * as React from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -23,6 +16,8 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from "@/components/ui/chart";
 
 import {
@@ -33,7 +28,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { getTransactionHistoryData, getYearlyTransactionHistoryData } from "@/utils/transactions";
+import { getTransactionHistoryData } from "@/utils/transactions";
+
+const chartConfig = {
+  income: {
+    label: "Income",
+    color: "var(--chart-3)",
+  },
+  expense: {
+    label: "Expense",
+    color: "var(--chart-3)",
+  },
+} satisfies ChartConfig;
 
 const months = [
   { value: 1, label: "January" },
@@ -53,104 +59,63 @@ const months = [
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
-type ViewType = "monthly" | "yearly";
-
-const chartConfig = {
-  income: {
-    label: "Income",
-    color: "hsl(var(--chart-1))",
-  },
-
-  expense: {
-    label: "Expense",
-    color: "hsl(var(--chart-2))",
-  },
-} satisfies ChartConfig;
-
 export default function TransactionHistoryChart({
   userId,
   initialMonthlyData,
-  initialYearlyData,
 }: {
   userId: string;
   initialMonthlyData: { day: number; income: number; expense: number }[];
   initialYearlyData: { month: string; income: number; expense: number }[];
 }) {
-  const [viewType, setViewType] = React.useState<ViewType>("monthly");
   const [month, setMonth] = React.useState(new Date().getMonth() + 1);
   const [year, setYear] = React.useState(new Date().getFullYear());
   const [monthlyData, setMonthlyData] = React.useState(initialMonthlyData);
-  const [yearlyData, setYearlyData] = React.useState(initialYearlyData);
   const [loading, setLoading] = React.useState(false);
 
-  const fetchMonthlyData = async (m: number, y: number) => {
+  const fetchData = async (m: number, y: number) => {
     setLoading(true);
     const data = await getTransactionHistoryData(userId, m, y);
     setMonthlyData(data);
     setLoading(false);
   };
 
-  const fetchYearlyData = async (y: number) => {
-    setLoading(true);
-    const data = await getYearlyTransactionHistoryData(userId, y);
-    setYearlyData(data);
-    setLoading(false);
-  };
-
   const handleMonthChange = (newMonth: number) => {
     setMonth(newMonth);
-    fetchMonthlyData(newMonth, year);
+    fetchData(newMonth, year);
   };
 
   const handleYearChange = (newYear: number) => {
     setYear(newYear);
-    if (viewType === "monthly") {
-      fetchMonthlyData(month, newYear);
-    } else {
-      fetchYearlyData(newYear);
-    }
+    fetchData(month, newYear);
   };
 
-  const handleViewTypeChange = (newView: ViewType) => {
-    setViewType(newView);
-    if (newView === "monthly") {
-      fetchMonthlyData(month, year);
-    } else {
-      fetchYearlyData(year);
-    }
-  };
+  const filteredData = React.useMemo(() => {
+    const now = new Date(year, month - 1);
+    const startDate = new Date(now);
+
+    return monthlyData
+      .filter((item) => {
+        const itemDate = new Date(year, month - 1, item.day);
+        return itemDate >= startDate;
+      })
+      .map((item) => ({
+        ...item,
+        date: `${year}-${String(month).padStart(2, "0")}-${String(item.day).padStart(2, "0")}`,
+      }));
+  }, [monthlyData, month, year]);
 
   return (
-    <Card className="border-none shadow-none mt-10">
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle className="text-3xl font-bold">Transaction History</CardTitle>
-          <div className="flex items-center gap-2">
-            <div className="flex rounded-md bg-muted p-1">
-              <button
-                onClick={() => handleViewTypeChange("monthly")}
-                className={`rounded-sm px-3 py-1 text-sm font-medium transition-all ${
-                  viewType === "monthly"
-                    ? "bg-background text-foreground shadow"
-                    : "text-muted-foreground"
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => handleViewTypeChange("yearly")}
-                className={`rounded-sm px-3 py-1 text-sm font-medium transition-all ${
-                  viewType === "yearly"
-                    ? "bg-background text-foreground shadow"
-                    : "text-muted-foreground"
-                }`}
-              >
-                Yearly
-              </button>
-            </div>
-          </div>
+    <Card className="mt-10">
+      <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+        <div className="grid flex-1 gap-1">
+          <CardTitle className="text-2xl font-bold">
+            Transaction History
+          </CardTitle>
+          <CardDescription>
+            Showing income and expense for the selected period
+          </CardDescription>
         </div>
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-2">
           <Select
             value={year.toString()}
             onValueChange={(value) => handleYearChange(Number(value))}
@@ -166,94 +131,106 @@ export default function TransactionHistoryChart({
               ))}
             </SelectContent>
           </Select>
-          {viewType === "monthly" && (
-            <Select
-              value={month.toString()}
-              onValueChange={(value) => handleMonthChange(Number(value))}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Select month" />
-              </SelectTrigger>
-              <SelectContent>
-                {months.map((m) => (
-                  <SelectItem key={m.value} value={m.value.toString()}>
-                    {m.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+          <Select
+            value={month.toString()}
+            onValueChange={(value) => handleMonthChange(Number(value))}
+          >
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Select month" />
+            </SelectTrigger>
+            <SelectContent>
+              {months.map((m) => (
+                <SelectItem key={m.value} value={m.value.toString()}>
+                  {m.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         {loading ? (
-          <div className="flex h-[350px] items-center justify-center">
+          <div className="flex h-[250px] items-center justify-center">
             <span className="text-muted-foreground">Loading...</span>
           </div>
-        ) : viewType === "monthly" ? (
-          monthlyData.length === 0 ? (
-            <div className="flex h-[350px] items-center justify-center text-muted-foreground">
-              No information to show
-            </div>
-          ) : (
-            <ChartContainer config={chartConfig} className="h-[350px] w-full">
-              <LineChart accessibilityLayer data={monthlyData}>
-                <CartesianGrid vertical={false} />
-
-                <XAxis
-                  dataKey="day"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                />
-
-                <YAxis tickLine={false} axisLine={false} tickMargin={8} />
-
-                <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-
-                <Line
-                  type="monotone"
-                  dataKey="income"
-                  stroke="var(--color-income)"
-                  strokeWidth={3}
-                  dot={false}
-                />
-
-                <Line
-                  type="monotone"
-                  dataKey="expense"
-                  stroke="var(--color-expense)"
-                  strokeWidth={3}
-                  dot={false}
-                />
-              </LineChart>
-            </ChartContainer>
-          )
-        ) : yearlyData.length === 0 ? (
-          <div className="flex h-[350px] items-center justify-center text-muted-foreground">
+        ) : filteredData.length === 0 ? (
+          <div className="flex h-[250px] items-center justify-center text-muted-foreground">
             No information to show
           </div>
         ) : (
-          <ChartContainer config={chartConfig} className="h-[350px] w-full">
-            <BarChart accessibilityLayer data={yearlyData}>
+          <ChartContainer
+            config={chartConfig}
+            className="aspect-auto h-[250px] w-full"
+          >
+            <AreaChart data={filteredData}>
+              <defs>
+                <linearGradient id="fillIncome" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-income)"
+                    stopOpacity={0.8}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-income)"
+                    stopOpacity={0.1}
+                  />
+                </linearGradient>
+                <linearGradient id="fillExpense" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-expense)"
+                    stopOpacity={0.8}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-expense)"
+                    stopOpacity={0.1}
+                  />
+                </linearGradient>
+              </defs>
               <CartesianGrid vertical={false} />
-
               <XAxis
-                dataKey="month"
+                dataKey="day"
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
+                minTickGap={32}
+                tickFormatter={(value) => value.toString()}
               />
-
               <YAxis tickLine={false} axisLine={false} tickMargin={8} />
-
-              <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-
-              <Bar dataKey="income" fill="var(--color-income)" radius={6} />
-
-              <Bar dataKey="expense" fill="var(--color-expense)" radius={6} />
-            </BarChart>
+              <ChartTooltip
+                cursor={false}
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(value,payload) => {
+                      if (payload && payload.length > 0) {
+                        const day = payload[0].payload.day;
+                        return `${months[month - 1].label} ${day}, ${year}`;
+                      }
+                      return `${months[month - 1].label}, ${year}`;
+                    }}
+                    indicator="dot"
+                  />
+                }
+              />
+              <Area
+                dataKey="income"
+                type="natural"
+                fill="url(#fillIncome)"
+                stroke="var(--color-income)"
+                stackId="a"
+              />
+              <Area
+                dataKey="expense"
+                type="natural"
+                fill="url(#fillExpense)"
+                stroke="var(--color-expense)"
+                stackId="a"
+              />
+              <ChartLegend content={<ChartLegendContent />} />
+            </AreaChart>
           </ChartContainer>
         )}
       </CardContent>

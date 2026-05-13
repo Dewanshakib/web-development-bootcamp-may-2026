@@ -49,7 +49,7 @@ export function CategoryRadarChart({
   const chartConfig = {
     value: {
       label: "Count",
-      color: "#000",
+      color: "var(--chart-3)",
     },
   } satisfies ChartConfig;
 
@@ -74,7 +74,7 @@ export function CategoryRadarChart({
               <PolarGrid />
               <PolarAngleAxis dataKey="category_name" />
               <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-              <Radar dataKey="value" fill="#8884d8" fillOpacity={0.6} />
+              <Radar dataKey="value" fill="var(--chart-3)" fillOpacity={0.6} />
             </RadarChart>
           </ChartContainer>
         )}

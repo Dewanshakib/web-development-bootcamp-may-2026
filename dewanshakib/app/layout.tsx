@@ -7,6 +7,8 @@ import NavbarWrapper from "@/components/layout/navbar-wrapper";
 import Navbar from "@/components/layout/navbar";
 import { Toaster } from "@/components/ui/sonner";
 import ThemeProvider from "@/components/layout/theme-provider";
+import FooterWrapper from "@/components/layout/footer-wrapper";
+import Footer from "@/components/pages/home/footer";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -21,9 +23,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Expense Tracker",
+  title: "Khorcha • Expense Tracker",
   description:
-    "A expense tracker app where you can manage your daily expenses to make your lifestyle beautiful.",
+    "A expense tracker app where you can manage your daily income & expenses to make your lifestyle beautiful & sustaine.",
 };
 
 export default function RootLayout({
@@ -56,6 +58,9 @@ export default function RootLayout({
               <Navbar />
             </NavbarWrapper>
             {children}
+            <FooterWrapper>
+              <Footer />
+            </FooterWrapper>
             <Toaster />
           </TooltipProvider>
         </ThemeProvider>

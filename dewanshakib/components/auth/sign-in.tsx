@@ -1,5 +1,5 @@
 "use client";
-import React, { FormEvent } from "react";
+import { FormEvent } from "react";
 import { Button } from "../ui/button";
 import { signIn } from "@/lib/auth-client";
 import { toast } from "sonner";
@@ -37,7 +37,7 @@ export default function SignIn({
     <>
       <form onSubmit={onSubmit}>
         <Button variant={variant} size={"lg"} type="submit">
-          {title} {title.startsWith("Get") && <LogIn />}
+          {title} {<LogIn />}
         </Button>
       </form>
     </>

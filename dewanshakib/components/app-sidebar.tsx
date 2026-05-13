@@ -15,7 +15,7 @@ import {
 import { LayoutDashboard, HandCoins, Tags, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import logo from "@/public/assets/khorcha_logo-Photoroom.svg";
+import logo from "@/public/assets/khorcha_logo.png";
 
 const data = {
   user: {
@@ -61,7 +61,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <Image
                   src={logo}
                   fill
-                  className="object-contain"
+                  className="object-contain dark:invert"
                   alt="processi - brand logo"
                   priority
                 />

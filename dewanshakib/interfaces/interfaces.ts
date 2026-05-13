@@ -54,8 +54,7 @@ export interface ITransactionsTableProps {
 }
 
 export interface IDashboardSearchParams {
-  from?: string;
-  to?: string;
+  month?:string;
 }
 
 export interface IDashboardProps {

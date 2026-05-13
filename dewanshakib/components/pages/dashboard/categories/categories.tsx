@@ -25,7 +25,7 @@ export default async function Categories({
 
   const params = await searchParams;
   const page = params?.page ? parseInt(params.page) : 1;
-  const limit = 10;
+  const limit = 5;
   const skip = (page - 1) * limit;
   const orderByParam = (params?.orderBy ?? "created_at").toLowerCase();
   const orderDirParam = (params?.orderDir ?? "desc").toLowerCase();
@@ -65,7 +65,7 @@ export default async function Categories({
             pagination={{ totalPages, currentPage: page }}
             sortParams={sortParams}
           />
-          <div className="mt-6 flex items-center justify-between text-sm text-muted-foreground">
+          {/* <div className="mt-6 flex items-center justify-between text-sm text-muted-foreground">
             <span>
               Page {page} of {totalPages}
             </span>
@@ -95,7 +95,7 @@ export default async function Categories({
                 </span>
               )}
             </div>
-          </div>
+          </div> */}
         </>
       ) : (
         <div className="py-8 text-sm text-muted-foreground">
